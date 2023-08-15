@@ -30,8 +30,8 @@ class CaixaDaLanchonete {
     convertToCart(itens) {
         let cart = {};
         itens.forEach((item) => {
-            let currentItemInfo = item.split(",");
-            cart[currentItemInfo[0]] = currentItemInfo[1];
+            const [code, quantity] = item.split(",");
+            cart[code] = quantity;
         })
         return cart;
     }
@@ -62,12 +62,12 @@ class CaixaDaLanchonete {
     }
 
     validateExtras(cart){
-        this.validateExtra('cafe', 'chantily', cart);
-        this.validateExtra('sanduiche', 'queijo', cart);
+        this.validateExtra(cart, 'chantily', 'cafe');
+        this.validateExtra(cart, 'queijo', 'sanduiche');
     }
 
-    validateExtra(prin, comp, cart){
-        if (cart.hasOwnProperty(comp) && !cart.hasOwnProperty(prin)){
+    validateExtra(cart, extra, mainDish){
+        if (cart.hasOwnProperty(extra) && !cart.hasOwnProperty(mainDish)){
             throw 'Item extra não pode ser pedido sem o principal';
         }
     }
