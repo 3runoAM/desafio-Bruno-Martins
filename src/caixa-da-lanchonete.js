@@ -17,20 +17,20 @@ class CaixaDaLanchonete {
     calcularValorDaCompra(metodoDePagamento, itens) {
         let cart = this.convertToCart(itens);
         try {
-            this.validateEmptyCart(cart)
-            this.validateCodeAndQuantity(cart)
-            this.validateExtra(cart)
-            this.validatePaymentMethod(metodoDePagamento)
+            this.validateEmptyCart(cart);
+            this.validateCodeAndQuantity(cart);
+            this.validateExtras(cart);
+            this.validatePaymentMethod(metodoDePagamento);
+            return this.calculateTotal(metodoDePagamento, cart);
         } catch (erro) {
             return erro;
         }
-        return this.total(metodoDePagamento, cart);
     }
 
     convertToCart(itens) {
         let cart = {};
         itens.forEach((item) => {
-            let currentItemInfo = item.split(",")
+            let currentItemInfo = item.split(",");
             cart[currentItemInfo[0]] = currentItemInfo[1];
         })
         return cart;
@@ -43,27 +43,31 @@ class CaixaDaLanchonete {
     }
 
     validateCodes(code){
-        if (!this.menu.hasOwnProperty(code[0])){
-            throw "Item inválido!"
+        if (!this.menu.hasOwnProperty(code)){
+            throw "Item inválido!";
         }
     }
 
-    validateQuantity(code){
-        if (code[1] <= 0){
-            throw "Quantidade inválida!"
+    validateQuantity(quantity){
+        if (quantity <= 0){
+            throw "Quantidade inválida!";
         }
     }
 
     validateCodeAndQuantity(cart) {
-        for(let itemInfo of Object.entries(cart)){
-            this.validateCodes(itemInfo)
-            this.validateQuantity(itemInfo)
+        for(const [code, quantity] of Object.entries(cart)){
+            this.validateCodes(code);
+            this.validateQuantity(quantity);
         }
     }
 
-    validateExtra(cart){
-        if ((cart.hasOwnProperty("queijo") && !cart.hasOwnProperty('sanduiche'))
-            || (cart.hasOwnProperty('chantily')) && !cart.hasOwnProperty('cafe')){
+    validateExtras(cart){
+        this.validateExtra('cafe', 'chantily', cart);
+        this.validateExtra('sanduiche', 'queijo', cart);
+    }
+
+    validateExtra(prin, comp, cart){
+        if (cart.hasOwnProperty(comp) && !cart.hasOwnProperty(prin)){
             throw 'Item extra não pode ser pedido sem o principal';
         }
     }
@@ -77,23 +81,21 @@ class CaixaDaLanchonete {
     applyDiscountOrSurcharge(paymentMethod, total){
         if (paymentMethod === 'credito') {
             return total + total * this.paymentMethods[paymentMethod];
-        } else if (paymentMethod === 'dinheiro'){
+        }
+        if (paymentMethod === 'dinheiro'){
             return total - total * this.paymentMethods[paymentMethod];
         }
         return total;
     }
 
-    total(paymentMethod, cart){
+    calculateTotal(paymentMethod, cart){
         let total = 0;
-        for (let itemInfo of Object.entries(cart)){
-            total += this.menu[itemInfo[0]] * itemInfo[1];
+        for (const [code, quantity] of Object.entries(cart)){
+            total += this.menu[code] * quantity;
         }
         total = this.applyDiscountOrSurcharge(paymentMethod, total);
-        total = Number(total.toFixed(2))
+        total = Number(total.toFixed(2));
         return total.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
     }
 }
-
 export { CaixaDaLanchonete };
-
-let caixa = new CaixaDaLanchonete();
